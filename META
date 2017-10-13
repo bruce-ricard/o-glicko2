@@ -1,0 +1,11 @@
+# OASIS_START
+# DO NOT EDIT (digest: 90b70cac246dd406e4c0dbf237e79276)
+version = "0.1"
+description = "Ocaml implementation of the Glicko2 rating system"
+archive(byte) = "glicko2.cma"
+archive(byte, plugin) = "glicko2.cma"
+archive(native) = "glicko2.cmxa"
+archive(native, plugin) = "glicko2.cmxs"
+exists_if = "glicko2.cma"
+# OASIS_STOP
+

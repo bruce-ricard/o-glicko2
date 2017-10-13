@@ -1,22 +1,24 @@
-(* glicko2 ranks contestants according to the Glicko 2 ranking system *)
-
 type player =
-	{ r : float;
-	  rd : float;
-	  sigma : float }
+  {
+    rating: float;
+    rating_deviation: float;
+    sigma: float;
+  }
 
-type opponent =
-	{ rj : float;
-	  rdj : float;
-	  sj : float }
+type game_outcome =
+  Player1Win | Player2Win | Draw
 
-val pi : float
-val square : float -> float
-val g : float -> float
-val e : float -> float -> float -> float
-val scale : float -> float -> float * float
+type game_result =
+  {
+    player1: player;
+    player2: player;
+    game_outcome: game_outcome
+  }
 
-val rate : player -> opponent list -> player
+type rate_result =
+  {
+    new_player1: player;
+    new_player2: player;
+  }
 
-val bench_data : unit -> (player * opponent list)
-val bench : (player * opponent list) -> unit
+val rate: game_result -> rate_result
