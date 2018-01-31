@@ -2,7 +2,7 @@ type player =
   {
     rating: float;
     rating_deviation: float;
-    sigma: float;
+    volatility: float;
   }
 
 type game_outcome =

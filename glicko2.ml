@@ -2,7 +2,7 @@ type player =
   {
     rating: float;
     rating_deviation: float;
-    sigma: float;
+    volatility: float;
   }
 
 type game_outcome =
@@ -26,7 +26,7 @@ let internal_player player =
   {
     r = player.rating;
     rd = player.rating_deviation;
-    sigma = player.sigma;
+    sigma = player.volatility;
   }
 
 let internal_opponent player game_result =
@@ -40,7 +40,7 @@ let player_from_internal internal =
   {
     rating = internal.r;
     rating_deviation = internal.rd;
-    sigma = internal.sigma
+    volatility = internal.sigma
   }
 
 type players = P1 | P2
