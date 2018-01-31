@@ -103,7 +103,14 @@ let is_too_small volatility = volatility < 1e-10
 let rate game_result =
   if is_too_small game_result.player1.volatility
      || is_too_small game_result.player2.volatility then
-    InvalidVolatility
+    begin
+      Logs.err (fun m ->
+          m
+            "Invalid volatlity on input: %s"
+            (game_result_to_string game_result)
+        );
+      InvalidVolatility
+    end
   else
     try
       NewRatings (rate_unsafe game_result)
