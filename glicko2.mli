@@ -21,4 +21,9 @@ type rate_result =
     new_player2: player;
   }
 
-val rate: game_result -> rate_result
+type result =
+  | NewRatings of rate_result
+  | InvalidVolatility
+  | InternalError
+
+val rate: game_result -> result

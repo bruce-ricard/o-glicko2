@@ -9,12 +9,14 @@ Plugins:     META (0.4), DevFiles (0.4)
 Library glicko2
   Path:       .
   BuildTools: ocamlbuild
+  BuildDepends: logs
   InternalModules: Glicko_internal
   Modules: Glicko2
 
 Executable test
   Path:       .
   BuildTools: ocamlbuild
+  BuildDepends: logs
   MainIs:     test.ml
 
 Test test

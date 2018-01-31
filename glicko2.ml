@@ -15,11 +15,35 @@ type game_result =
     game_outcome: game_outcome
   }
 
+let game_result_to_string result =
+  let player_to_string player =
+    Printf.sprintf
+      "{rating = %f; rating_deviation = %f; volatility = %f}"
+      player.rating
+      player.rating_deviation
+      player.volatility
+  in
+  let outcome_to_string = function
+    | Player1Win -> "Player1Win"
+    | Player2Win -> "Player2Win"
+    | Draw -> "Draw"
+  in
+  Printf.sprintf
+    "{player1 = %s; player2 = %s; game_outcome = %s}"
+    (player_to_string result.player1)
+    (player_to_string result.player2)
+    (outcome_to_string result.game_outcome)
+
 type rate_result =
   {
     new_player1: player;
     new_player2: player;
   }
+
+type result =
+  | NewRatings of rate_result
+  | InvalidVolatility
+  | InternalError
 
 let internal_player player =
   let open Glicko_internal in
@@ -52,7 +76,7 @@ let personal_game_outcome game_outcome player =
   | Draw, _ -> Draw
   | Player1Win, P2 | Player2Win, P1 -> Lost
 
-let rate game_result =
+let rate_unsafe game_result =
   let p1 = internal_player game_result.player1
   and p2 = internal_player game_result.player2 in
 
@@ -73,3 +97,27 @@ let rate game_result =
     new_player1=player_from_internal newp1;
     new_player2=player_from_internal newp2
   }
+
+let is_too_small volatility = volatility < 1e-10
+
+let rate game_result =
+  if is_too_small game_result.player1.volatility
+     || is_too_small game_result.player2.volatility then
+    InvalidVolatility
+  else
+    try
+      NewRatings (rate_unsafe game_result)
+    with
+    | Glicko_internal.Exceeded_Iterations ->
+       Logs.err (fun m ->
+           m
+             "Glicko2 Exceeded iterations on input: %s"
+             (game_result_to_string game_result)
+         ); InternalError
+    | e ->
+       Logs.err (fun m ->
+           m
+             "Glicko2 unknown error on input %s: %s"
+             (game_result_to_string game_result)
+             (Printexc.to_string e)
+         ); InternalError
