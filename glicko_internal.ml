@@ -23,9 +23,9 @@ let print_opponent (muj, phij, gphij, emmp, sj) =
 let printf_opponents opps = List.iter print_opponent opps
 
 (* Constants *)
-let pi = 3.14159265
+let pi = 2. *. acos 0.
 let epsilon = 0.000001
-
+let tau = 0.5
 let scale_factor = 173.7178
 
 (* Helper functions *)
@@ -125,7 +125,6 @@ let unscale mup phip =
 	(rp, rdp)
 
 let rate {r; rd; sigma} opps =
-	let tau = 0.5 in
 	let (mu, phi) = scale r rd in
 	let sopps = scale_opponents mu opps in
 	let v = update_rating sopps in

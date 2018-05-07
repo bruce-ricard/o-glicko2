@@ -1,4 +1,4 @@
 S .
 B _build
 
-PKG logs
+PKG logs alcotest

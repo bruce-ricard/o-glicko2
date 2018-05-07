@@ -4,6 +4,7 @@ Version:     0.1
 Synopsis:    Ocaml implementation of the Glicko2 rating system
 Authors:     jlouis, ricard
 License:     LGPL-2.1 with OCaml linking exception
+BuildTools:  ocamlbuild
 Plugins:     META (0.4), DevFiles (0.4)
 
 Library glicko2
@@ -15,10 +16,12 @@ Library glicko2
 
 Executable test
   Path:       .
-  BuildTools: ocamlbuild
-  BuildDepends: logs
+  Build$: flag(tests)
+  CompiledObject: best
+  Install: false
+  BuildDepends: alcotest, glicko2
   MainIs:     test.ml
 
 Test test
-  Command: ./test
+  Command: $test
   Run: true
