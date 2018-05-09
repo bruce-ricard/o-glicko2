@@ -4,12 +4,18 @@ version: "0.1"
 maintainer: "Bruce Ricard <bruce.ricard@gmail.com>"
 author: "Jesper Louis Andersen <jesper.louis.andersen@gmail.com>"
 homepage: "https://github.com/bruce-ricard/o-glicko2"
-bug-reports: ""
-license: ""
-dev-repo: ""
-build: [
-    [make]
-]
+bug-reports: "https://github.com/bruce-ricard/o-glicko2"
+license: "GNU GPLv3"
+dev-repo: "https://github.com/bruce-ricard/o-glicko2"
+build: [make]
 install: [make "install"]
+build-test : [
+  ["./configure" "--enable-tests"]
+  [make "test"]
+]
 remove: ["ocamlfind" "remove" "glicko2"]
-depends: "ocamlfind"
+depends: [
+  "ocamlfind"
+  "logs"
+  "alcotest"
+]
