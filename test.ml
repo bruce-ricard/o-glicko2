@@ -1,11 +1,17 @@
 open Glicko2
 
+let () = Logs.set_reporter (Logs_fmt.reporter ())
+
 let player_to_string {rating; rating_deviation; volatility} =
   Printf.sprintf
     "{rating = %f; rating_deviation = %f; volatlity = %f}"
     rating
     rating_deviation
     volatility
+
+let player =
+  Alcotest.testable (Fmt.of_to_string player_to_string)
+                    (=)
 
 let ratings_to_string {new_player1; new_player2} =
   Printf.sprintf
@@ -19,10 +25,11 @@ let rate_result_to_string = function
        "NewRatings(%s)"
        (ratings_to_string ratings)
   | InvalidVolatility -> "InvalidVolatlity"
-  | InternalError -> "InternalError"
+  | InternalError s -> Printf.sprintf "InternalError(%s)" s
 
 let rate_result_t =
-  Alcotest.testable (Fmt.of_to_string rate_result_to_string) (=)
+  Alcotest.testable (Fmt.of_to_string rate_result_to_string)
+                    (=)
 
 let player_return_to_string =
   let open Printf in
@@ -31,7 +38,8 @@ let player_return_to_string =
   | Error s -> sprintf "Error(%s)" s
 
 let player_return =
-  Alcotest.testable (Fmt.of_to_string player_return_to_string) (=)
+  Alcotest.testable (Fmt.of_to_string player_return_to_string)
+                    (=)
 
 let test_default_player () =
   Alcotest.check
@@ -108,8 +116,8 @@ let default_player_suite = [
     "high rating deviation", `Quick, test_default_player_high_deviation;
   ]
 
-let default_player () =
-  match Glicko2.default_player () with
+let default_player ?rating ?rating_deviation () =
+  match Glicko2.default_player ?rating ?rating_deviation () with
   | Player p -> p
   | _ -> Alcotest.fail "default player should be created"
 
@@ -380,7 +388,7 @@ let test_rating_with_volatility2 () =
        p2rating
   | _ -> Alcotest.fail "should return new ratings"
 
-let rate_suite = [
+let rate_single_game_suite = [
     "rate rates", `Quick, test_simple_rate;
     "draw rates correctly", `Quick, test_simple_rate2;
     "win changes rating", `Quick, test_win_changes_rating;
@@ -397,10 +405,110 @@ let rate_suite = [
     "volatility affects rating", `Quick, test_rating_with_volatility2;
   ]
 
+let test_rate_two_games () = ()
+(*  let game_results =
+    {
+      player1 = default_player ();
+      player2 = default_player ();
+      game_outcome = Player1Win,[Player1Win];
+    } in
+  match Glicko2.rate game_results with
+  | NewRatings {new_player1} ->
+     Alcotest.check
+       player
+       "player shouldn't change after no game is played"
+       (default_player ())
+       new_player1
+  | InvalidVolatility ->  Alcotest.fail "shouldn't fail"
+  | _ ->  Alcotest.fail "shouldn't internal error"
+ *)
+let rate_suite =  [
+    "two games played", `Quick, test_rate_two_games;
+  ]
+
+let test_update_only_deviation () =
+  let p = default_player () in
+  let new_p =
+    Glicko2.update_player_after_not_player_in_rating_period p
+  in
+  match new_p with
+  | Player {rating; rating_deviation; volatility} ->
+     begin
+       Alcotest.check
+         (Alcotest.float 1e-2)
+         "rating shouldn't change"
+         1500.
+         rating;
+       Alcotest.check
+         (Alcotest.float 1e-2)
+         "volaility shouldn't change"
+         0.06
+         volatility
+     end
+  | Error _ -> Alcotest.fail "Shouldn't error out"
+
+let test_update_deviation () =
+  let p = default_player () in
+  let new_p =
+    Glicko2.update_player_after_not_player_in_rating_period p
+  in
+  match new_p with
+  | Player {rating_deviation} ->
+     begin
+       Alcotest.check
+         (Alcotest.float 1e-2)
+         "rating deviation should be updated"
+         350.155
+         rating_deviation;
+     end
+  | Error _ -> Alcotest.fail "Shouldn't error out"
+
+
+let test_update_deviation2 () =
+  let p = default_player ~rating_deviation:5. () in
+  let new_p =
+    Glicko2.update_player_after_not_player_in_rating_period p
+  in
+  match new_p with
+  | Player {rating_deviation} ->
+     begin
+       Alcotest.check
+         (Alcotest.float 1e-2)
+         "rating deviation should be updated"
+         11.56
+         rating_deviation;
+     end
+  | Error _ -> Alcotest.fail "Shouldn't error out"
+
+let test_update_deviation_with_high_volatility () =
+  let p = {rating = 1500.; rating_deviation = 5.; volatility = 1.} in
+  let new_p =
+    Glicko2.update_player_after_not_player_in_rating_period p
+  in
+  match new_p with
+  | Player {rating_deviation} ->
+     begin
+       Alcotest.check
+         (Alcotest.float 1e-2)
+         "rating deviation should be updated"
+         173.79
+         rating_deviation;
+     end
+  | Error _ -> Alcotest.fail "Shouldn't error out"
+
+let update_suite = [
+    "update only touches deviation", `Quick, test_update_only_deviation;
+    "update updates deviation", `Quick, test_update_deviation;
+    "update updates deviation", `Quick, test_update_deviation2;
+    "volatility increases deviation", `Quick, test_update_deviation_with_high_volatility;
+  ]
+
 let () =
   Alcotest.run
     "glicko2 lib"
     [
       "default player", default_player_suite;
+      "rate single game", rate_single_game_suite;
       "rate", rate_suite;
+      "update no game", update_suite;
     ]

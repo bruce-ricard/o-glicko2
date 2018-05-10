@@ -28,7 +28,9 @@ type 'a game_result =
   }
 
 type one_game_result = game_outcome game_result
-type multiple_games_result = game_outcome list game_result
+
+type game_outcome_non_emtpy_list = game_outcome * game_outcome list
+type multiple_games_result = game_outcome_non_emtpy_list game_result
 
 type new_ratings =
   {
@@ -39,7 +41,7 @@ type new_ratings =
 type rate_result =
   | NewRatings of new_ratings
   | InvalidVolatility
-  | InternalError
+  | InternalError of string
 
 type player_return =
   | Player of player
@@ -56,3 +58,6 @@ val default_player:
 
 val rate: multiple_games_result -> rate_result
 val rate_single_game: one_game_result -> rate_result
+
+val update_player_after_not_player_in_rating_period:
+  player -> player_return

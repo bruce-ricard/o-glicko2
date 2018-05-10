@@ -35,7 +35,8 @@ type 'a game_result =
   }
 
 type one_game_result = game_outcome game_result
-type multiple_games_result = game_outcome list game_result
+type game_outcome_non_emtpy_list = game_outcome * game_outcome list
+type multiple_games_result = game_outcome_non_emtpy_list game_result
 
 let player_to_string player =
   Printf.sprintf
@@ -64,12 +65,16 @@ let list_to_string ts elts =
   in
   "[ " ^ aux elts ^ " ]"
 
+
 let game_results_to_string result =
+  let game_outcomes =
+    let g,gs = result.game_outcome in
+    g :: gs in
   Printf.sprintf
     "{player1 = %s; player2 = %s; game_outcome = %s}"
     (player_to_string result.player1)
     (player_to_string result.player2)
-    (list_to_string outcome_to_string result.game_outcome)
+    (list_to_string outcome_to_string game_outcomes)
 
 type new_ratings =
   {
@@ -80,7 +85,7 @@ type new_ratings =
 type rate_result =
   | NewRatings of new_ratings
   | InvalidVolatility
-  | InternalError
+  | InternalError of string
 
 let internal_player player =
   let open Glicko_internal in
@@ -117,6 +122,10 @@ let rate_unsafes (game_results : multiple_games_result) =
   let p1 = internal_player game_results.player1
   and p2 = internal_player game_results.player2 in
 
+  let game_outcomes =
+    let g,gs = game_results.game_outcome in
+    g :: gs  in
+
   let newp1 = Glicko_internal.rate
                 p1
                 (List.map
@@ -125,7 +134,7 @@ let rate_unsafes (game_results : multiple_games_result) =
                         game_results.player2
                         (personal_game_outcome game_outcome P1)
                    )
-                   game_results.game_outcome
+                   game_outcomes
                 )
   and newp2 = Glicko_internal.rate
                 p2
@@ -135,7 +144,7 @@ let rate_unsafes (game_results : multiple_games_result) =
                         game_results.player1
                         (personal_game_outcome game_outcome P2)
                    )
-                   game_results.game_outcome
+                   game_outcomes
                 )
   in
   {
@@ -187,14 +196,14 @@ let rate (game_results : multiple_games_result) =
            m
              "Glicko2 Exceeded iterations on input: %s"
              (game_results_to_string game_results)
-         ); InternalError
+         ); InternalError "Glicko2 exceeded iterations"
     | e ->
        Logs.err (fun m ->
            m
              "Glicko2 unknown error on input %s: %s"
              (game_results_to_string game_results)
              (Printexc.to_string e)
-         ); InternalError
+         ); InternalError (Printexc.to_string e)
 
 let rate_single_game game_result =
   if is_too_small game_result.player1.volatility
@@ -216,11 +225,18 @@ let rate_single_game game_result =
            m
              "Glicko2 Exceeded iterations on input: %s"
              (game_result_to_string game_result)
-         ); InternalError
+         ); InternalError "Glicko2 exceeded iterations"
     | e ->
        Logs.err (fun m ->
            m
              "Glicko2 unknown error on input %s: %s"
              (game_result_to_string game_result)
              (Printexc.to_string e)
-         ); InternalError
+         ); InternalError (Printexc.to_string e)
+
+let update_player_after_not_player_in_rating_period player =
+  let internal_p = internal_player player in
+  let updated_internal =
+    Glicko_internal.update_after_not_player_in_rating_period
+      internal_p in
+  Player (player_from_internal updated_internal)

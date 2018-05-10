@@ -1,8 +1,8 @@
 # OASIS_START
-# DO NOT EDIT (digest: 268f6659219509ee2cb75ccabe8454e4)
+# DO NOT EDIT (digest: 15c5811adb8af788c24b65bf734cc0c0)
 version = "0.1"
 description = "Ocaml implementation of the Glicko2 rating system"
-requires = "logs"
+requires = "logs logs.fmt"
 archive(byte) = "glicko2.cma"
 archive(byte, plugin) = "glicko2.cma"
 archive(native) = "glicko2.cmxa"
