@@ -9,9 +9,17 @@ let player_to_string {rating; rating_deviation; volatility} =
     rating_deviation
     volatility
 
+let compare_players (=) p1 p2 =
+  p1.rating = p2.rating
+  &&
+    p1.rating_deviation = p2.rating_deviation
+  &&
+    p1.volatility = p2.volatility
+
 let player =
-  Alcotest.testable (Fmt.of_to_string player_to_string)
-                    (=)
+  Alcotest.testable
+    (Fmt.of_to_string player_to_string)
+    (compare_players (fun x y -> abs_float (x -. y) < 1e-2))
 
 let ratings_to_string {new_player1; new_player2} =
   Printf.sprintf
@@ -178,6 +186,44 @@ let test_win_changes_rating () =
        "rating should be lower"
        1337.69
        p2rating
+  | _ -> Alcotest.fail "should return new ratings"
+
+let test_two_wins_change_rating () =
+  let game_result =
+    {
+      player1 = default_player ();
+      player2 = default_player ();
+      game_outcome = Player1Win;
+    } in
+  match rate_single_game game_result with
+  | NewRatings({new_player1;}) ->
+     begin
+       let game2_result =
+         {
+           player1 = new_player1;
+           player2 = default_player ();
+           game_outcome = Player1Win;
+         } in
+       match rate_single_game game2_result with
+       | NewRatings(
+           {
+             new_player1 = {
+               rating;
+               rating_deviation;
+             };
+         }) ->
+          Alcotest.check
+            (Alcotest.float 1e-2)
+            "rating should be larger"
+            1750.54
+            rating;
+          Alcotest.check
+            (Alcotest.float 1e-2)
+            "deviation should be smaller"
+            256.35
+            rating_deviation
+       | _ -> Alcotest.fail "should return new ratings"
+     end
   | _ -> Alcotest.fail "should return new ratings"
 
 let test_deviation_matters () =
@@ -392,6 +438,7 @@ let rate_single_game_suite = [
     "rate rates", `Quick, test_simple_rate;
     "draw rates correctly", `Quick, test_simple_rate2;
     "win changes rating", `Quick, test_win_changes_rating;
+    "2 wings change rating", `Quick, test_two_wins_change_rating;
     "rating deviation affects new ratings", `Quick, test_deviation_matters;
     "volatility affects new ratings", `Quick, test_volatility_matters;
     "rating deviation is updated", `Quick, test_deviation_is_updated;
@@ -405,24 +452,71 @@ let rate_single_game_suite = [
     "volatility affects rating", `Quick, test_rating_with_volatility2;
   ]
 
-let test_rate_two_games () = ()
-(*  let game_results =
+let player_to_opponent
+      {
+        rating;
+        rating_deviation;
+      } =
+  {
+    o_rating = rating;
+    o_rating_deviation = rating_deviation;
+  }
+
+let test_rate_one_game () =
+  let game_results =
     {
-      player1 = default_player ();
-      player2 = default_player ();
-      game_outcome = Player1Win,[Player1Win];
+      player = default_player ();
+      games = {
+          opponent = player_to_opponent (default_player ());
+          result = `Win
+        },[];
     } in
+  let expected_new_player =
+    {
+      rating = 1662.31;
+      rating_deviation = 290.32;
+      volatility = 0.06;
+    }
+  in
   match Glicko2.rate game_results with
-  | NewRatings {new_player1} ->
+  | Player new_player ->
      Alcotest.check
        player
-       "player shouldn't change after no game is played"
-       (default_player ())
-       new_player1
-  | InvalidVolatility ->  Alcotest.fail "shouldn't fail"
+       "Player should have higher rating"
+       expected_new_player
+       new_player
   | _ ->  Alcotest.fail "shouldn't internal error"
- *)
+
+let test_rate_two_games () =
+  let game1 =
+    {
+      opponent = player_to_opponent (default_player ());
+      result = `Win
+    } in
+  let game_results =
+    {
+      player = default_player ();
+      games = game1,[game1];
+    } in
+  let expected_new_player =
+    {
+      rating = 1747.31;
+      rating_deviation = 253.40;
+      volatility = 0.06;
+    }
+  in
+  match Glicko2.rate game_results with
+  | Player new_player ->
+     Alcotest.check
+       player
+       "Player should have higher rating"
+       expected_new_player
+       new_player
+  | _ ->  Alcotest.fail "shouldn't internal error"
+
+
 let rate_suite =  [
+    "one game played", `Quick, test_rate_one_game;
     "two games played", `Quick, test_rate_two_games;
   ]
 

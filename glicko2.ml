@@ -27,16 +27,31 @@ let default_player ?(rating=1500) ?(rating_deviation=350.) () =
 type game_outcome =
   Player1Win | Player2Win | Draw
 
-type 'a game_result =
+type game_result =
   {
     player1: player;
     player2: player;
-    game_outcome: 'a
+    game_outcome: game_outcome
   }
 
-type one_game_result = game_outcome game_result
-type game_outcome_non_emtpy_list = game_outcome * game_outcome list
-type multiple_games_result = game_outcome_non_emtpy_list game_result
+type personal_result = [ `Win | `Lose | `Draw ]
+
+type opponent =
+  {
+    o_rating: float;
+    o_rating_deviation: float;
+  }
+
+type g = {
+    opponent: opponent;
+    result: personal_result;
+  }
+
+type multiple_games_result =
+  {
+    player: player;
+    games : g * g list
+  }
 
 let player_to_string player =
   Printf.sprintf
@@ -65,17 +80,16 @@ let list_to_string ts elts =
   in
   "[ " ^ aux elts ^ " ]"
 
-
+(*
 let game_results_to_string result =
-  let game_outcomes =
-    let g,gs = result.game_outcome in
+  let games =
+    let g,gs = result.games in
     g :: gs in
   Printf.sprintf
-    "{player1 = %s; player2 = %s; game_outcome = %s}"
-    (player_to_string result.player1)
-    (player_to_string result.player2)
-    (list_to_string outcome_to_string game_outcomes)
-
+    "{player = %s; games = %s}"
+    (player_to_string result.player)
+    (list_to_string outcome_to_string games)
+ *)
 type new_ratings =
   {
     new_player1: player;
@@ -95,21 +109,35 @@ let internal_player player =
     sigma = player.volatility;
   }
 
+let opponent_to_internal opponent game_result =
+  let open Glicko_internal in
+  { rj = opponent.o_rating;
+    rdj = opponent.o_rating_deviation;
+    sj = game_result }
+
 let internal_opponent player game_result =
   let open Glicko_internal in
   { rj = player.rating;
     rdj = player.rating_deviation;
-    sj = game_result }
+    sj = game_result;
+  }
 
 let player_from_internal internal =
   let open Glicko_internal in
   {
     rating = internal.r;
     rating_deviation = internal.rd;
-    volatility = internal.sigma
+    volatility = internal.sigma;
   }
 
 type players = P1 | P2
+
+let internal_outcome =
+  let open Glicko_internal in
+  function
+  | `Win -> Win
+  | `Lose -> Lost
+  | `Draw -> Draw
 
 let personal_game_outcome game_outcome player =
   let open Glicko_internal in
@@ -119,38 +147,24 @@ let personal_game_outcome game_outcome player =
   | Player1Win, P2 | Player2Win, P1 -> Lost
 
 let rate_unsafes (game_results : multiple_games_result) =
-  let p1 = internal_player game_results.player1
-  and p2 = internal_player game_results.player2 in
-
+  let player = internal_player game_results.player in
   let game_outcomes =
-    let g,gs = game_results.game_outcome in
+    let g,gs = game_results.games in
     g :: gs  in
 
-  let newp1 = Glicko_internal.rate
-                p1
-                (List.map
-                   (function game_outcome ->
-                      internal_opponent
-                        game_results.player2
-                        (personal_game_outcome game_outcome P1)
-                   )
-                   game_outcomes
-                )
-  and newp2 = Glicko_internal.rate
-                p2
-                (List.map
-                   (function game_outcome ->
-                      internal_opponent
-                        game_results.player1
-                        (personal_game_outcome game_outcome P2)
-                   )
-                   game_outcomes
-                )
+  let new_player =
+    Glicko_internal.rate
+      player
+      (List.map
+         (function game_outcome ->
+            opponent_to_internal
+              game_outcome.opponent
+              (internal_outcome game_outcome.result)
+         )
+         game_outcomes
+      )
   in
-  {
-    new_player1=player_from_internal newp1;
-    new_player2=player_from_internal newp2
-  }
+  Player (player_from_internal new_player)
 
 let rate_unsafe game_result =
   let p1 = internal_player game_result.player1
@@ -177,33 +191,28 @@ let rate_unsafe game_result =
 let is_too_small volatility = volatility < 1e-10
 
 let rate (game_results : multiple_games_result) =
-  if is_too_small game_results.player1.volatility
-     || is_too_small game_results.player2.volatility then
+  if is_too_small game_results.player.volatility then
     begin
       Logs.err (fun m ->
           m
             "Invalid volatlity on input: %s"
-            (game_results_to_string game_results)
+            (player_to_string game_results.player)
         );
-      InvalidVolatility
+      Error "IV"(* InvalidVolatility*)
     end
   else
     try
-      NewRatings (rate_unsafes game_results)
+      rate_unsafes game_results
     with
     | Glicko_internal.Exceeded_Iterations ->
        Logs.err (fun m ->
-           m
-             "Glicko2 Exceeded iterations on input: %s"
-             (game_results_to_string game_results)
-         ); InternalError "Glicko2 exceeded iterations"
+           m "Glicko2 Exceeded iterations"
+         ); Error "IT Glicko2 exceeded iterations"
     | e ->
        Logs.err (fun m ->
-           m
-             "Glicko2 unknown error on input %s: %s"
-             (game_results_to_string game_results)
+           m "Glicko2 unknown error %s"
              (Printexc.to_string e)
-         ); InternalError (Printexc.to_string e)
+         ); Error (Printexc.to_string e)
 
 let rate_single_game game_result =
   if is_too_small game_result.player1.volatility

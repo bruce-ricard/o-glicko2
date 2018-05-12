@@ -20,17 +20,32 @@ type game_outcome =
 The input type to the Glicko2 rating functions.
 The two players, and the outcome of the game.
  *)
-type 'a game_result =
+
+type game_result =
   {
     player1: player;
     player2: player;
-    game_outcome: 'a
+    game_outcome: game_outcome;
   }
 
-type one_game_result = game_outcome game_result
+type personal_result = [ `Win | `Lose | `Draw ]
 
-type game_outcome_non_emtpy_list = game_outcome * game_outcome list
-type multiple_games_result = game_outcome_non_emtpy_list game_result
+type opponent =
+  {
+    o_rating: float;
+    o_rating_deviation: float;
+  }
+
+type g = {
+    opponent: opponent;
+    result: personal_result;
+  }
+
+type multiple_games_result =
+  {
+    player: player;
+    games : g * g list
+  }
 
 type new_ratings =
   {
@@ -56,8 +71,9 @@ a volatility of 0.06.
 val default_player:
   ?rating:int -> ?rating_deviation:float -> unit -> player_return
 
-val rate: multiple_games_result -> rate_result
-val rate_single_game: one_game_result -> rate_result
+val rate: multiple_games_result -> player_return
+
+val rate_single_game: game_result -> rate_result
 
 val update_player_after_not_player_in_rating_period:
   player -> player_return
