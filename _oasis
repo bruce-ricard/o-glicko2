@@ -8,14 +8,14 @@ BuildTools:  ocamlbuild
 Plugins:     META (0.4), DevFiles (0.4)
 
 Library glicko2
-  Path:       .
+  Path:       src
   BuildTools: ocamlbuild
   BuildDepends: logs, logs.fmt
   InternalModules: Glicko_internal
   Modules: Glicko2
 
 Executable test
-  Path:       .
+  Path:       test
   Build$: flag(tests)
   CompiledObject: best
   Install: false
@@ -24,4 +24,5 @@ Executable test
 
 Test test
   Command: $test
+  WorkingDirectory: test/
   Run: true

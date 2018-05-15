@@ -1,0 +1,4 @@
+S .
+B ../_build/test
+
+PKG glicko2 alcotest

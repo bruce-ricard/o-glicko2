@@ -8,6 +8,7 @@
 ._ncdi/
 glicko2
 _build/*
+test/_build/
 
 setup.data
 setup.log
