@@ -27,32 +27,12 @@ module Player =
           }
   end
 
-
 let player_to_string player =
   Printf.sprintf
     "{rating = %f; rating_deviation = %f; volatility = %f}"
     player.rating
     player.rating_deviation
     player.volatility
-
-let list_to_string ts elts =
-  let rec aux = function
-    | [] -> ""
-    | [x] -> ts x
-    | x :: xs -> ts x ^ "; " ^ aux xs
-  in
-  "[ " ^ aux elts ^ " ]"
-
-(*
-let game_results_to_string result =
-  let games =
-    let g,gs = result.games in
-    g :: gs in
-  Printf.sprintf
-    "{player = %s; games = %s}"
-    (player_to_string result.player)
-    (list_to_string outcome_to_string games)
- *)
 
 let internal_player player =
   let open Glicko_internal in
@@ -84,7 +64,6 @@ let internal_outcome =
   | `Lose -> Lost
   | `Draw -> Draw
 
-
 let is_too_small volatility = volatility < 1e-10
 
 module LowLevel =
@@ -98,13 +77,11 @@ module LowLevel =
         rating_deviation: float;
       }
 
-
     let opponent_to_internal opponent game_result =
       let open Glicko_internal in
       { rj = opponent.rating;
         rdj = opponent.rating_deviation;
         sj = game_result }
-
 
     type game_outcome = {
         opponent: opponent;
@@ -116,7 +93,6 @@ module LowLevel =
         player: player;
         games : game_outcome * game_outcome list
       }
-
 
     let rate_unsafes game_results =
       let player = internal_player game_results.player in
@@ -202,7 +178,6 @@ module SingleGame =
         (player_to_string result.player1)
         (player_to_string result.player2)
         (outcome_to_string result.game_outcome)
-
 
     let personal_game_outcome game_outcome player =
       let open Glicko_internal in
