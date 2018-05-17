@@ -169,7 +169,7 @@ module SingleGame =
 
 
     type game_outcome =
-      Player1Win | Player2Win | Draw
+    [ `Player1Win | `Player2Win | `Draw ]
 
     type game_result =
       {
@@ -192,9 +192,9 @@ module SingleGame =
       | InternalError of string
 
     let outcome_to_string = function
-      | Player1Win -> "Player1Win"
-      | Player2Win -> "Player2Win"
-      | Draw -> "Draw"
+      | `Player1Win -> "Player1Win"
+      | `Player2Win -> "Player2Win"
+      | `Draw -> "Draw"
 
     let game_result_to_string result =
       Printf.sprintf
@@ -207,9 +207,9 @@ module SingleGame =
     let personal_game_outcome game_outcome player =
       let open Glicko_internal in
       match game_outcome,player with
-      | Player1Win, P1 | Player2Win, P2 -> Win
-      | Draw, _ -> Draw
-      | Player1Win, P2 | Player2Win, P1 -> Lost
+      | `Player1Win, P1 | `Player2Win, P2 -> Win
+      | `Draw, _ -> Draw
+      | `Player1Win, P2 | `Player2Win, P1 -> Lost
 
     let rate_unsafe game_result =
       let p1 = internal_player game_result.player1

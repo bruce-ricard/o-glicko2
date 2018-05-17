@@ -7,7 +7,7 @@ let test_simple_rate () =
     {
       player1 = default_player ();
       player2 = default_player ();
-      game_outcome = Draw;
+      game_outcome = `Draw;
     } in
   match rate game_result with
   | NewRatings _ -> ()
@@ -18,7 +18,7 @@ let test_simple_rate2 () =
     {
       player1 = default_player ();
       player2 = default_player ();
-      game_outcome = Draw;
+      game_outcome = `Draw;
     } in
   match rate game_result with
   | NewRatings({
@@ -42,7 +42,7 @@ let test_win_changes_rating () =
     {
       player1 = default_player ();
       player2 = default_player ();
-      game_outcome = Player1Win;
+      game_outcome = `Player1Win;
     } in
   match rate game_result with
   | NewRatings({
@@ -66,7 +66,7 @@ let test_two_wins_change_rating () =
     {
       player1 = default_player ();
       player2 = default_player ();
-      game_outcome = Player1Win;
+      game_outcome = `Player1Win;
     } in
   match rate game_result with
   | NewRatings({new_player1;}) ->
@@ -75,7 +75,7 @@ let test_two_wins_change_rating () =
          {
            player1 = new_player1;
            player2 = default_player ();
-           game_outcome = Player1Win;
+           game_outcome = `Player1Win;
          } in
        match rate game2_result with
        | NewRatings(
@@ -104,7 +104,7 @@ let test_deviation_matters () =
     {
       player1 = {(default_player ()) with rating_deviation = 100.};
       player2 = {(default_player ()) with rating_deviation = 10.};
-      game_outcome = Player1Win;
+      game_outcome = `Player1Win;
     } in
   match rate game_result with
   | NewRatings({
@@ -130,7 +130,7 @@ let test_volatility_matters () =
     {
       player1 = {(default_player ()) with volatility = 1.};
       player2 = {(default_player ()) with volatility = 10.};
-      game_outcome = Player1Win;
+      game_outcome = `Player1Win;
     } in
   match rate game_result with
   | NewRatings({
@@ -155,7 +155,7 @@ let test_deviation_is_updated () =
     {
       player1 = default_player ();
       player2 = default_player ();
-      game_outcome = Player1Win;
+      game_outcome = `Player1Win;
     } in
   match rate game_result with
   | NewRatings({
@@ -180,7 +180,7 @@ let test_deviation_is_updated2 () =
     {
       player1 = {(default_player ()) with rating = 2500.};
       player2 = default_player ();
-      game_outcome = Player1Win;
+      game_outcome = `Player1Win;
     } in
   match rate game_result with
   | NewRatings({
@@ -205,7 +205,7 @@ let test_deviation_is_updated3 () =
     {
       player1 = {(default_player ()) with rating = 2500.};
       player2 = default_player ();
-      game_outcome = Player2Win;
+      game_outcome = `Player2Win;
     } in
   match rate game_result with
   | NewRatings({
@@ -231,7 +231,7 @@ let test_deviation_is_updated4 () =
       player1 = {(default_player ())
                 with volatility = 0.0001};
       player2 = default_player ();
-      game_outcome = Player1Win;
+      game_outcome = `Player1Win;
     } in
   match rate game_result with
   | NewRatings({
@@ -258,7 +258,7 @@ let test_rating_with_volatility1 () =
                 with volatility = 0.0001};
       player2 = {(default_player ())
                 with volatility = 1.};
-      game_outcome = Player1Win;
+      game_outcome = `Player1Win;
     } in
   match rate game_result with
   | NewRatings({
@@ -287,7 +287,7 @@ let test_rating_with_volatility2 () =
       player2 = {(default_player ())
                 with volatility = 1.;
                      rating_deviation = 10.};
-      game_outcome = Player1Win;
+      game_outcome = `Player1Win;
     } in
   match rate game_result with
   | NewRatings({

@@ -23,22 +23,22 @@ module LowLevel :
 sig
   type personal_result = [ `Win | `Lose | `Draw ]
 
-    type opponent =
-      {
-        rating: float;
-        rating_deviation: float;
-      }
+  type opponent =
+    {
+      rating: float;
+      rating_deviation: float;
+    }
 
-    type game_outcome = {
-        opponent: opponent;
-        result: personal_result;
-      }
+  type game_outcome = {
+      opponent: opponent;
+      result: personal_result;
+    }
 
-    type game_results =
-      {
-        player : player;
-        games : game_outcome * game_outcome list
-      }
+  type game_results =
+    {
+      player : player;
+      games : game_outcome * game_outcome list
+    }
 
   val default_player:
     ?rating:int -> ?rating_deviation:float -> unit -> player_return
@@ -49,7 +49,7 @@ module SingleGame :
 sig
   (* TODO make this a polymorphic variant to be able to subtype it if needed. Or not? *)
   type game_outcome =
-    Player1Win | Player2Win | Draw
+    [ `Player1Win | `Player2Win | `Draw ]
 
   type new_ratings =
     {
