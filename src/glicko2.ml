@@ -94,7 +94,7 @@ module LowLevel =
         games : game_outcome * game_outcome list
       }
 
-    let rate_unsafes game_results =
+    let rate_unsafe game_results =
       let player = internal_player game_results.player in
       let game_outcomes =
         let g,gs = game_results.games in
@@ -122,16 +122,16 @@ module LowLevel =
                 "Invalid volatlity on input: %s"
                 (player_to_string game_results.player)
             );
-          Error "IV"(* InvalidVolatility*)
+          Error "Invalid volatility"
         end
       else
         try
-          rate_unsafes game_results
+          rate_unsafe game_results
         with
         | Glicko_internal.Exceeded_Iterations ->
            Logs.err (fun m ->
                m "Glicko2 Exceeded iterations"
-             ); Error "IT Glicko2 exceeded iterations"
+             ); Error "Exceeded iterations"
         | e ->
            Logs.err (fun m ->
                m "Glicko2 unknown error %s"
@@ -142,7 +142,6 @@ module LowLevel =
 module SingleGame =
   struct
     include Player
-
 
     type game_outcome =
     [ `Player1Win | `Player2Win | `Draw ]
@@ -164,8 +163,7 @@ module SingleGame =
 
     type rate_result =
       | NewRatings of new_ratings
-      | InvalidVolatility
-      | InternalError of string
+      | Error of string
 
     let outcome_to_string = function
       | `Player1Win -> "Player1Win"
@@ -217,7 +215,7 @@ module SingleGame =
                 "Invalid volatlity on input: %s"
                 (game_result_to_string game_result)
             );
-          InvalidVolatility
+          Error "Invalid volatility"
         end
       else
         try
@@ -228,14 +226,14 @@ module SingleGame =
                m
                  "Glicko2 Exceeded iterations on input: %s"
                  (game_result_to_string game_result)
-             ); InternalError "Glicko2 exceeded iterations"
+             ); Error "Exceeded iterations"
         | e ->
            Logs.err (fun m ->
                m
                  "Glicko2 unknown error on input %s: %s"
                  (game_result_to_string game_result)
                  (Printexc.to_string e)
-             ); InternalError (Printexc.to_string e)
+             ); Error (Printexc.to_string e)
 
     let update_player_after_not_player_in_rating_period player =
       let internal_p = internal_player player in

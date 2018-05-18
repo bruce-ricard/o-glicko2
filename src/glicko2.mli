@@ -10,11 +10,6 @@ type player =
     volatility: float;
   }
 
-(**
-The input type to the Glicko2 rating functions.
-The two players, and the outcome of the game.
- *)
-
 type player_return =
   | Player of player
   | Error of string
@@ -47,7 +42,6 @@ end
 
 module SingleGame :
 sig
-  (* TODO make this a polymorphic variant to be able to subtype it if needed. Or not? *)
   type game_outcome =
     [ `Player1Win | `Player2Win | `Draw ]
 
@@ -59,9 +53,12 @@ sig
 
   type rate_result =
     | NewRatings of new_ratings
-    | InvalidVolatility
-    | InternalError of string
+    | Error of string
 
+  (**
+    The input type to the Glicko2 rating functions.
+    The two players, and the outcome of the game.
+   *)
   type game_result =
     {
       player1: player;

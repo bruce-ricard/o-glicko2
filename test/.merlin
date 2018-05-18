@@ -1,4 +1,6 @@
 S .
+S ../src
 B ../_build/test
+B ../_build/src
 
-PKG glicko2 alcotest
+PKG alcotest

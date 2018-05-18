@@ -31,8 +31,7 @@ let rate_result_to_string = function
      Printf.sprintf
        "NewRatings(%s)"
        (ratings_to_string ratings)
-  | InvalidVolatility -> "InvalidVolatlity"
-  | InternalError s -> Printf.sprintf "InternalError(%s)" s
+  | Error s -> Printf.sprintf "Error(%s)" s
 
 let rate_result_t =
   Alcotest.testable (Fmt.of_to_string rate_result_to_string)
