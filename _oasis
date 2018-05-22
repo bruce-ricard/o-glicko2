@@ -10,7 +10,7 @@ Plugins:     META (0.4), DevFiles (0.4)
 Library glicko2
   Path:       src
   BuildTools: ocamlbuild
-  BuildDepends: logs, logs.fmt
+  BuildDepends: core, logs, logs.fmt, threads
   InternalModules: Glicko_internal
   Modules: Glicko2
 

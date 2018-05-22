@@ -1,4 +1,4 @@
 S .
 B ../_build/src
 
-PKG logs alcotest
+PKG logs alcotest core

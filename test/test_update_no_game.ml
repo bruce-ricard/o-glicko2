@@ -1,3 +1,4 @@
+open Core.Std
 open Glicko2
 open SingleGame
 open Test_utils
@@ -9,7 +10,7 @@ let test_update_only_deviation () =
   let p = default_player () in
   let new_p = update p in
   match new_p with
-  | Player {rating; rating_deviation; volatility} ->
+  | Ok {rating; rating_deviation; volatility} ->
      begin
        Alcotest.check
          (Alcotest.float 1e-2)
@@ -28,7 +29,7 @@ let test_update_deviation () =
   let p = default_player () in
   let new_p = update p in
   match new_p with
-  | Player {rating_deviation} ->
+  | Ok {rating_deviation} ->
      begin
        Alcotest.check
          (Alcotest.float 1e-2)
@@ -43,7 +44,7 @@ let test_update_deviation2 () =
   let p = default_player ~rating_deviation:5. () in
   let new_p = update p in
   match new_p with
-  | Player {rating_deviation} ->
+  | Ok {rating_deviation} ->
      begin
        Alcotest.check
          (Alcotest.float 1e-2)
@@ -57,7 +58,7 @@ let test_update_deviation_with_high_volatility () =
   let p = {rating = 1500.; rating_deviation = 5.; volatility = 1.} in
   let new_p = update p in
   match new_p with
-  | Player {rating_deviation} ->
+  | Ok {rating_deviation} ->
      begin
        Alcotest.check
          (Alcotest.float 1e-2)

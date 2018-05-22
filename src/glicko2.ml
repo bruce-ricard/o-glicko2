@@ -5,21 +5,39 @@ type player =
     volatility: float;
   }
 
-type player_return =
-  | Player of player
-  | Error of string
+
+type unknown_error = [
+    `UnknownError of string
+  ]
+
+type rate_error =
+  [
+  | `InvalidVolatility
+  | `ExceededIterations
+  | unknown_error
+  ]
+
+type player_error = [
+  | `InvalidArgument of string
+  | unknown_error
+  ]
+
+type 'a rate_result = ('a, rate_error)  Core.Std.Result.t
+type player_result = (player, player_error) Core.Std.Result.t
 
 module Player =
   struct
+    open Core.Std
+
     let default_player ?(rating=1500) ?(rating_deviation=350.) () =
       if rating < 100 then
-        Error "rating cannot be lower than 100"
+        Error (`InvalidArgument "rating cannot be lower than 100")
       else if rating_deviation < 0. then
-        Error "rating_deviation cannot be negative"
+        Error (`InvalidArgument "rating_deviation cannot be negative")
       else if rating_deviation > 350. then
-        Error "rating_deviation cannot be greater than 350"
+        Error (`InvalidArgument "rating_deviation cannot be greater than 350")
       else
-        Player
+        Ok
           {
             rating = float_of_int rating;
             rating_deviation;
@@ -68,6 +86,7 @@ let is_too_small volatility = volatility < 1e-10
 
 module LowLevel =
   struct
+    open Core.Std
     include Player
     type personal_result = [ `Win | `Lose | `Draw ]
 
@@ -104,7 +123,7 @@ module LowLevel =
         Glicko_internal.rate
           player
           (List.map
-             (function game_outcome ->
+             ~f:(function game_outcome ->
                        opponent_to_internal
                          game_outcome.opponent
                          (internal_outcome game_outcome.result)
@@ -112,7 +131,7 @@ module LowLevel =
              game_outcomes
           )
       in
-      Player (player_from_internal new_player)
+      player_from_internal new_player
 
     let rate game_results =
       if is_too_small game_results.player.volatility then
@@ -122,26 +141,27 @@ module LowLevel =
                 "Invalid volatlity on input: %s"
                 (player_to_string game_results.player)
             );
-          Error "Invalid volatility"
+          Error `InvalidVolatility
         end
       else
         try
-          rate_unsafe game_results
+          Ok (rate_unsafe game_results)
         with
         | Glicko_internal.Exceeded_Iterations ->
            Logs.err (fun m ->
                m "Glicko2 Exceeded iterations"
-             ); Error "Exceeded iterations"
+             ); Error `ExceededIterations
         | e ->
            Logs.err (fun m ->
                m "Glicko2 unknown error %s"
-                 (Printexc.to_string e)
-             ); Error (Printexc.to_string e)
+                 (Exn.to_string e)
+             ); Error (`UnknownError (Exn.to_string e))
   end
 
 module SingleGame =
   struct
     include Player
+    open Core.Std
 
     type game_outcome =
     [ `Player1Win | `Player2Win | `Draw ]
@@ -161,9 +181,9 @@ module SingleGame =
         new_player2: player;
       }
 
-    type rate_result =
+(*    type rate_result =
       | NewRatings of new_ratings
-      | Error of string
+      | Error of string*)
 
     let outcome_to_string = function
       | `Player1Win -> "Player1Win"
@@ -215,31 +235,30 @@ module SingleGame =
                 "Invalid volatlity on input: %s"
                 (game_result_to_string game_result)
             );
-          Error "Invalid volatility"
+          Error `InvalidVolatility
         end
       else
         try
-          NewRatings (rate_unsafe game_result)
+          Ok (rate_unsafe game_result)
         with
         | Glicko_internal.Exceeded_Iterations ->
            Logs.err (fun m ->
                m
                  "Glicko2 Exceeded iterations on input: %s"
                  (game_result_to_string game_result)
-             ); Error "Exceeded iterations"
+             ); Error `ExceededIterations
         | e ->
            Logs.err (fun m ->
                m
                  "Glicko2 unknown error on input %s: %s"
                  (game_result_to_string game_result)
-                 (Printexc.to_string e)
-             ); Error (Printexc.to_string e)
+                 (Exn.to_string e)
+             ); Error (`UnknownError (Exn.to_string e))
 
     let update_player_after_not_player_in_rating_period player =
       let internal_p = internal_player player in
       let updated_internal =
         Glicko_internal.update_after_not_playing_in_rating_period
           internal_p in
-      Player (player_from_internal updated_internal)
-
+      Core.Std.Ok (player_from_internal updated_internal)
   end

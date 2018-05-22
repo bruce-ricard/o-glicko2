@@ -1,3 +1,4 @@
+open Core.Std
 open Glicko2
 open SingleGame
 open Test_utils
@@ -10,7 +11,7 @@ let test_simple_rate () =
       game_outcome = `Draw;
     } in
   match rate game_result with
-  | NewRatings _ -> ()
+  | Ok _ -> ()
   | _ -> Alcotest.fail "should return new ratings"
 
 let test_simple_rate2 () =
@@ -21,7 +22,7 @@ let test_simple_rate2 () =
       game_outcome = `Draw;
     } in
   match rate game_result with
-  | NewRatings({
+  | Ok({
         new_player1 = {rating = p1rating;};
         new_player2 = {rating = p2rating;};
     }) ->
@@ -45,7 +46,7 @@ let test_win_changes_rating () =
       game_outcome = `Player1Win;
     } in
   match rate game_result with
-  | NewRatings({
+  | Ok({
         new_player1 = {rating = p1rating;};
         new_player2 = {rating = p2rating;};
     }) ->
@@ -69,7 +70,7 @@ let test_two_wins_change_rating () =
       game_outcome = `Player1Win;
     } in
   match rate game_result with
-  | NewRatings({new_player1;}) ->
+  | Ok({new_player1;}) ->
      begin
        let game2_result =
          {
@@ -78,7 +79,7 @@ let test_two_wins_change_rating () =
            game_outcome = `Player1Win;
          } in
        match rate game2_result with
-       | NewRatings(
+       | Ok(
            {
              new_player1 = {
                rating;
@@ -107,7 +108,7 @@ let test_deviation_matters () =
       game_outcome = `Player1Win;
     } in
   match rate game_result with
-  | NewRatings({
+  | Ok({
         new_player1 = {rating = p1rating;};
         new_player2 = {rating = p2rating;};
     }) ->
@@ -133,7 +134,7 @@ let test_volatility_matters () =
       game_outcome = `Player1Win;
     } in
   match rate game_result with
-  | NewRatings({
+  | Ok({
         new_player1 = {rating = p1rating;};
         new_player2 = {rating = p2rating;};
     }) ->
@@ -158,7 +159,7 @@ let test_deviation_is_updated () =
       game_outcome = `Player1Win;
     } in
   match rate game_result with
-  | NewRatings({
+  | Ok({
         new_player1 = {rating_deviation = p1deviation;};
         new_player2 = {rating_deviation = p2deviation;};
     }) ->
@@ -183,7 +184,7 @@ let test_deviation_is_updated2 () =
       game_outcome = `Player1Win;
     } in
   match rate game_result with
-  | NewRatings({
+  | Ok({
         new_player1 = {rating_deviation = p1deviation;};
         new_player2 = {rating_deviation = p2deviation;};
     }) ->
@@ -208,7 +209,7 @@ let test_deviation_is_updated3 () =
       game_outcome = `Player2Win;
     } in
   match rate game_result with
-  | NewRatings({
+  | Ok({
         new_player1 = {rating_deviation = p1deviation;};
         new_player2 = {rating_deviation = p2deviation;};
     }) ->
@@ -234,7 +235,7 @@ let test_deviation_is_updated4 () =
       game_outcome = `Player1Win;
     } in
   match rate game_result with
-  | NewRatings({
+  | Ok({
         new_player1 = {rating_deviation = p1deviation;};
         new_player2 = {rating_deviation = p2deviation;};
     }) ->
@@ -261,7 +262,7 @@ let test_rating_with_volatility1 () =
       game_outcome = `Player1Win;
     } in
   match rate game_result with
-  | NewRatings({
+  | Ok({
         new_player1 = {rating = p1rating;};
         new_player2 = {rating = p2rating;};
     }) ->
@@ -290,7 +291,7 @@ let test_rating_with_volatility2 () =
       game_outcome = `Player1Win;
     } in
   match rate game_result with
-  | NewRatings({
+  | Ok({
         new_player1 = {rating = p1rating;};
         new_player2 = {rating = p2rating;};
     }) ->

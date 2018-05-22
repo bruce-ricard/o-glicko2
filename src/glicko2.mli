@@ -10,9 +10,24 @@ type player =
     volatility: float;
   }
 
-type player_return =
-  | Player of player
-  | Error of string
+type unknown_error = [
+    `UnknownError of string
+  ]
+
+type rate_error =
+  [
+  | `InvalidVolatility
+  | `ExceededIterations
+  | unknown_error
+  ]
+
+type player_error = [
+  | `InvalidArgument of string
+  | unknown_error
+  ]
+
+type 'a rate_result = ('a, rate_error)  Core.Std.Result.t
+type player_result = (player, player_error) Core.Std.Result.t
 
 module LowLevel :
 sig
@@ -36,8 +51,9 @@ sig
     }
 
   val default_player:
-    ?rating:int -> ?rating_deviation:float -> unit -> player_return
-  val rate: game_results -> player_return
+    ?rating:int -> ?rating_deviation:float -> unit
+    -> player_result
+  val rate: game_results -> player rate_result
 end
 
 module SingleGame :
@@ -50,10 +66,6 @@ sig
       new_player1: player;
       new_player2: player;
     }
-
-  type rate_result =
-    | NewRatings of new_ratings
-    | Error of string
 
   (**
     The input type to the Glicko2 rating functions.
@@ -73,9 +85,10 @@ sig
     a volatility of 0.06.
    *)
   val default_player:
-    ?rating:int -> ?rating_deviation:float -> unit -> player_return
+    ?rating:int -> ?rating_deviation:float -> unit
+    -> player_result
 
-  val rate: game_result -> rate_result
+  val rate: game_result -> new_ratings rate_result
   val update_player_after_not_player_in_rating_period:
-    player -> player_return
+    player -> player_result
 end

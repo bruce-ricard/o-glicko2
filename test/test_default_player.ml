@@ -1,12 +1,20 @@
+open Core.Std
 open Test_utils
 open Glicko2
 open SingleGame
+
+let default_player =
+  (default_player :> ?rating:int ->
+                     ?rating_deviation:float ->
+                     unit ->
+                     (Glicko2.player, Test_utils.err) Result.t
+  )
 
 let test_default_player () =
   Alcotest.check
     player_return
     "default player should be correct"
-    (Glicko2.Player
+    (Ok
        {
          rating = 1500.;
          rating_deviation = 350.;
@@ -19,7 +27,7 @@ let test_default_player_sets_rating () =
   Alcotest.check
     player_return
     "default player should be correct"
-    (Glicko2.Player
+    (Ok
        {
          rating = 1000.;
          rating_deviation = 350.;
@@ -32,7 +40,7 @@ let test_default_player_sets_deviation () =
   Alcotest.check
     player_return
     "default player should be correct"
-    (Glicko2.Player
+    (Ok
        {
          rating = 1500.;
          rating_deviation = 150.2;
@@ -45,17 +53,19 @@ let test_default_player_low_rating () =
   Alcotest.check
     player_return
     "default player should be correct"
-    (Glicko2.Error
-       "rating cannot be lower than 100"
-    )
+    (Error (
+         `InvalidArgument
+          "rating cannot be lower than 100"
+    ))
     (default_player ~rating:99 ())
 
 let test_default_player_low_deviation () =
   Alcotest.check
     player_return
     "default player should be correct"
-    (Glicko2.Error
-       "rating_deviation cannot be negative"
+    (Error
+       (`InvalidArgument
+       "rating_deviation cannot be negative")
     )
     (default_player ~rating_deviation:(-1e-5) ())
 
@@ -63,8 +73,9 @@ let test_default_player_high_deviation () =
   Alcotest.check
     player_return
     "default player should be correct"
-    (Glicko2.Error
-       "rating_deviation cannot be greater than 350"
+    (Error
+       (`InvalidArgument
+       "rating_deviation cannot be greater than 350")
     )
     (default_player ~rating_deviation:(350.01) ())
 

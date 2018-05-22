@@ -1,3 +1,4 @@
+open Core.Std
 open Glicko2.LowLevel
 open Test_utils
 
@@ -29,7 +30,7 @@ let test_rate_one_game () =
   in
   let open Glicko2 in
   match rate game_results with
-  | Player new_player ->
+  | Ok new_player ->
      Alcotest.check
        player
        "Player should have higher rating"
@@ -57,7 +58,7 @@ let test_rate_two_games () =
   in
   let open Glicko2 in
   match rate game_results with
-  | Player new_player ->
+  | Ok new_player ->
      Alcotest.check
        player
        "Player should have higher rating"
