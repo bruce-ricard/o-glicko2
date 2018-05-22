@@ -16,6 +16,7 @@ build-test : [
 remove: ["ocamlfind" "remove" "glicko2"]
 depends: [
   "ocamlfind"
+  "core"
   "logs"
   "alcotest"
 ]
