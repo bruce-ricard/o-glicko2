@@ -136,7 +136,7 @@ module LowLevel =
     let rate game_results =
       if is_too_small game_results.player.volatility then
         begin
-          Logs.err (fun m ->
+          Logs.info (fun m ->
               m
                 "Invalid volatlity on input: %s"
                 (player_to_string game_results.player)
