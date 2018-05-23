@@ -92,3 +92,5 @@ sig
   val update_player_after_not_player_in_rating_period:
     player -> player_result
 end
+
+val log_source : Logs.src

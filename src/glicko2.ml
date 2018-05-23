@@ -1,5 +1,7 @@
 module Logs = InternalLogs
 
+let log_source = Logs.src
+
 type player =
   {
     rating: float;
