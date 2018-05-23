@@ -225,15 +225,15 @@ module SingleGame =
                     ]
       in
       {
-        new_player1=player_from_internal newp1;
-        new_player2=player_from_internal newp2
+        new_player1 = player_from_internal newp1;
+        new_player2 = player_from_internal newp2
       }
 
     let rate game_result =
       if is_too_small game_result.player1.volatility
          || is_too_small game_result.player2.volatility then
         begin
-          Logs.err (fun m ->
+          Logs.info (fun m ->
               m
                 "Invalid volatlity on input: %s"
                 (game_result_to_string game_result)
@@ -247,14 +247,12 @@ module SingleGame =
         | Glicko_internal.Exceeded_Iterations ->
            Logs.err (fun m ->
                m
-                 "Glicko2 Exceeded iterations on input: %s"
-                 (game_result_to_string game_result)
+                 "Glicko2 Exceeded iterations"
              ); Error `ExceededIterations
         | e ->
            Logs.err (fun m ->
                m
-                 "Glicko2 unknown error on input %s: %s"
-                 (game_result_to_string game_result)
+                 "Glicko2 unknown error: %s"
                  (Exn.to_string e)
              ); Error (`UnknownError (Exn.to_string e))
 
