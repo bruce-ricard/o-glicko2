@@ -1,10 +1,11 @@
+module Logs = InternalLogs
+
 type player =
   {
     rating: float;
     rating_deviation: float;
     volatility: float;
   }
-
 
 type unknown_error = [
     `UnknownError of string
