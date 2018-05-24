@@ -11,7 +11,7 @@ Library glicko2
   Path:       src
   BuildTools: ocamlbuild
   BuildDepends: core, logs, logs.fmt, threads
-  InternalModules: Glicko_internal, InternalLogs
+  InternalModules: Glicko_internal, InternalLogs, Default_values, Types
   Modules: Glicko2
 
 Executable test

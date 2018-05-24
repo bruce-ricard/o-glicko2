@@ -10,4 +10,5 @@ let () =
       "rate single game", Test_rate_single_game.rate_single_game_suite;
       "rate", Test_low_level.rate_suite;
       "update no game", Test_update_no_game.update_suite;
+      "special config", Test_special_config.suite;
     ]

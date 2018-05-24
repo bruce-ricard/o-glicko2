@@ -1,5 +1,5 @@
 open Core.Std
-open Glicko2
+open Glicko2.Default
 open SingleGame
 
 let player_to_string {rating; rating_deviation; volatility} =

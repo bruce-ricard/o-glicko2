@@ -1,4 +1,6 @@
 open Core.Std
+
+module Glicko2 = Glicko2.Default
 open Glicko2.LowLevel
 open Test_utils
 

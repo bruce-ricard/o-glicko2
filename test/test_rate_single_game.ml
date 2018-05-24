@@ -1,5 +1,5 @@
 open Core.Std
-open Glicko2
+open Glicko2.Default
 open SingleGame
 open Test_utils
 

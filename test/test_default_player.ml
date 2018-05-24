@@ -1,11 +1,12 @@
 open Core.Std
 open Test_utils
+module Glicko2 = Glicko2.Default
 open Glicko2
 open SingleGame
 
 let default_player =
   (default_player :> ?rating:int ->
-                     ?rating_deviation:float ->
+                     ?rating_deviation:int ->
                      unit ->
                      (Glicko2.player, Test_utils.err) Result.t
   )
@@ -43,11 +44,11 @@ let test_default_player_sets_deviation () =
     (Ok
        {
          rating = 1500.;
-         rating_deviation = 150.2;
+         rating_deviation = 150.;
          volatility = 0.06;
        }
     )
-    (default_player ~rating_deviation:150.2 ())
+    (default_player ~rating_deviation:150 ())
 
 let test_default_player_low_rating () =
   Alcotest.check
@@ -67,7 +68,7 @@ let test_default_player_low_deviation () =
        (`InvalidArgument
        "rating_deviation cannot be negative")
     )
-    (default_player ~rating_deviation:(-1e-5) ())
+    (default_player ~rating_deviation:(-1) ())
 
 let test_default_player_high_deviation () =
   Alcotest.check
@@ -77,7 +78,7 @@ let test_default_player_high_deviation () =
        (`InvalidArgument
        "rating_deviation cannot be greater than 350")
     )
-    (default_player ~rating_deviation:(350.01) ())
+    (default_player ~rating_deviation:(351) ())
 
 let default_player_suite = [
     "creation", `Quick, test_default_player;

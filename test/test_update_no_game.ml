@@ -1,10 +1,10 @@
 open Core.Std
-open Glicko2
+open Glicko2.Default
 open SingleGame
 open Test_utils
 
 let update =
-  Glicko2.SingleGame.update_player_after_not_player_in_rating_period
+  update_player_after_not_player_in_rating_period
 
 let test_update_only_deviation () =
   let p = default_player () in
@@ -41,7 +41,7 @@ let test_update_deviation () =
 
 
 let test_update_deviation2 () =
-  let p = default_player ~rating_deviation:5. () in
+  let p = default_player ~rating_deviation:5 () in
   let new_p = update p in
   match new_p with
   | Ok {rating_deviation} ->
