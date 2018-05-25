@@ -2,7 +2,7 @@ module Logs = InternalLogs
 
 let log_source = Logs.src
 
-module Make (Config : Types.GLICKO2_CONFIG) =
+module Make (Config : Glicko2_types.GLICKO2_CONFIG) =
   struct
     module InternalConf =
       struct
