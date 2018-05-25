@@ -120,6 +120,9 @@ module Make (Config : Glicko2_types.GLICKO2_CONFIG) =
             rating_deviation: float;
           }
 
+        let player_to_opponent ({rating; rating_deviation;} : player) =
+          {rating; rating_deviation;}
+
         let opponent_to_internal opponent game_result =
           let open Glicko_internal in
           { rj = opponent.rating;

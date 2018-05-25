@@ -52,6 +52,8 @@ use the "default_player" function defined in this module.
           rating_deviation: float;
         }
 
+      val player_to_opponent : player -> opponent
+
       type game_outcome = {
           opponent: opponent;
           result: personal_result;
