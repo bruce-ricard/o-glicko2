@@ -106,6 +106,13 @@ module Make (Config : Glicko2_types.GLICKO2_CONFIG) =
       | `Lose -> Lost
       | `Draw -> Draw
 
+    let update_player_after_not_player_in_rating_period player =
+      let internal_p = internal_player player in
+      let updated_internal =
+        Glicko_internal.update_after_not_playing_in_rating_period
+          internal_p in
+      Core.Std.Ok (player_from_internal updated_internal)
+
     let is_too_small volatility = volatility < 1e-10
 
     module LowLevel =
@@ -183,6 +190,9 @@ module Make (Config : Glicko2_types.GLICKO2_CONFIG) =
                    m "Glicko2 unknown error %s"
                      (Exn.to_string e)
                  ); Error (`UnknownError (Exn.to_string e))
+
+        let update_player_after_not_player_in_rating_period =
+          update_player_after_not_player_in_rating_period
       end
 
     module SingleGame =
@@ -280,12 +290,8 @@ module Make (Config : Glicko2_types.GLICKO2_CONFIG) =
                      (Exn.to_string e)
                  ); Error (`UnknownError (Exn.to_string e))
 
-        let update_player_after_not_player_in_rating_period player =
-          let internal_p = internal_player player in
-          let updated_internal =
-            Glicko_internal.update_after_not_playing_in_rating_period
-              internal_p in
-          Core.Std.Ok (player_from_internal updated_internal)
+        let update_player_after_not_player_in_rating_period =
+          update_player_after_not_player_in_rating_period
       end
   end
 

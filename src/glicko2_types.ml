@@ -69,6 +69,8 @@ use the "default_player" function defined in this module.
         ?rating:int -> ?rating_deviation:int -> unit
         -> player_result
       val rate: game_results -> player rate_result
+      val update_player_after_not_player_in_rating_period:
+        player -> player_result
     end
 
     module SingleGame :
