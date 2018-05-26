@@ -1,4 +1,4 @@
-open Core.Std
+
 
 module GlickoLowTau =
   Glicko2.Make(
@@ -17,7 +17,7 @@ let test_low_tau () =
   let open SingleGame in
   let dp () =
     match default_player () with
-    | Ok p -> p
+    | `Ok p -> p
     | _ -> Alcotest.fail "default player shouldn't fail"
   in
   let game_result =
@@ -28,7 +28,7 @@ let test_low_tau () =
     }
   in
   match rate game_result with
-      | Ok({
+      | `Ok({
               new_player1 = {volatility;};
           }) ->
      Alcotest.check
@@ -55,7 +55,7 @@ let test_high_tau () =
   let open SingleGame in
   let dp () =
     match default_player () with
-    | Ok p -> p
+    | `Ok p -> p
     | _ -> Alcotest.fail "default player shouldn't fail"
   in
   let game_result =
@@ -70,7 +70,7 @@ let test_high_tau () =
     }
   in
   match rate game_result with
-      | Ok({
+      | `Ok({
               new_player1 = {volatility;};
           }) ->
      Alcotest.check
@@ -97,7 +97,7 @@ let test_large_epsilon () =
   let open SingleGame in
   let dp () =
     match default_player () with
-    | Ok p -> p
+    | `Ok p -> p
     | _ -> Alcotest.fail "default player shouldn't fail"
   in
   let game_result =
@@ -112,7 +112,7 @@ let test_large_epsilon () =
     }
   in
   match rate game_result with
-      | Ok({
+      | `Ok({
               new_player1 = {volatility;};
           }) ->
      Alcotest.check
@@ -141,7 +141,7 @@ let test_small_epsilon () =
   let open SingleGame in
   let dp () =
     match default_player () with
-    | Ok p -> p
+    | `Ok p -> p
     | _ -> Alcotest.fail "default player shouldn't fail"
   in
   let game_result =
@@ -156,7 +156,7 @@ let test_small_epsilon () =
     }
   in
   match rate game_result with
-      | Ok({
+      | `Ok({
               new_player1 = {volatility;};
           }) ->
      Alcotest.check
@@ -183,7 +183,7 @@ let test_default_player () =
   let open GlickoDefaultPlayer in
   let open SingleGame in
   match GlickoDefaultPlayer.SingleGame.default_player () with
-  | Ok
+  | `Ok
     {
       rating;
       rating_deviation;

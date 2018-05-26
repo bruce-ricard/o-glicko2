@@ -1,4 +1,3 @@
-open Core.Std
 open Glicko2.Default
 open SingleGame
 
@@ -19,7 +18,7 @@ let compare_players (=) p1 p2 =
 let player =
   Alcotest.testable
     (Fmt.of_to_string player_to_string)
-    (compare_players (fun x y -> Float.abs (x -. y) < 1e-2))
+    (compare_players (fun x y -> abs_float (x -. y) < 1e-2))
 
 let ratings_to_string {new_player1; new_player2} =
   Printf.sprintf
@@ -28,15 +27,11 @@ let ratings_to_string {new_player1; new_player2} =
     (player_to_string new_player2)
 
 let rate_result_to_string = function
-  | Ok(ratings) ->
+  | `Ok(ratings) ->
      Printf.sprintf
        "NewRatings(%s)"
        (ratings_to_string ratings)
-  | Error s -> Printf.sprintf "Error(%s)" s
-
-let rate_result_t =
-  Alcotest.testable (Fmt.of_to_string rate_result_to_string)
-                    (=)
+  | `Error s -> Printf.sprintf "`Error(%s)" s
 
 type err = [ `ExceededIterations
            | `InvalidArgument of string
@@ -46,14 +41,14 @@ type err = [ `ExceededIterations
 let (error_to_string : err -> string) = function
   | `InvalidVolatility -> "`InvalidVolatility"
   | `ExceededIterations -> "`ExceededIterations"
-  | `UnknownError s -> Printf.sprintf "`UnkownError(%s)" s
+  | `UnknownError s -> Printf.sprintf "`Unkown`Error(%s)" s
   | `InvalidArgument s -> Printf.sprintf "`InvalidArgument(%s)" s
 
-let player_return_to_string =
+let (player_return_to_string : player_result -> string) =
   let open Printf in
   function
-  | Ok p -> sprintf "Player(%s)" (player_to_string p)
-  | Error e -> sprintf "Error(%s)" (error_to_string e)
+  | `Ok p -> sprintf "Player(%s)" (player_to_string p)
+  | `Error e -> sprintf "`Error(%s)" (error_to_string (e :> err))
 
 let player_return =
   Alcotest.testable (Fmt.of_to_string player_return_to_string)
@@ -61,5 +56,5 @@ let player_return =
 
 let default_player ?rating ?rating_deviation () =
   match default_player ?rating ?rating_deviation () with
-  | Ok p -> p
+  | `Ok p -> p
   | _ -> Alcotest.fail "default player should be created"

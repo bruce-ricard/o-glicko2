@@ -1,4 +1,4 @@
-open Core.Std
+
 open Glicko2.Default
 open SingleGame
 open Test_utils
@@ -10,7 +10,7 @@ let test_update_only_deviation () =
   let p = default_player () in
   let new_p = update p in
   match new_p with
-  | Ok {rating; rating_deviation; volatility} ->
+  | `Ok {rating; rating_deviation; volatility} ->
      begin
        Alcotest.check
          (Alcotest.float 1e-2)
@@ -23,13 +23,13 @@ let test_update_only_deviation () =
          0.06
          volatility
      end
-  | Error _ -> Alcotest.fail "Shouldn't error out"
+  | `Error _ -> Alcotest.fail "Shouldn't error out"
 
 let test_update_deviation () =
   let p = default_player () in
   let new_p = update p in
   match new_p with
-  | Ok {rating_deviation} ->
+  | `Ok {rating_deviation} ->
      begin
        Alcotest.check
          (Alcotest.float 1e-2)
@@ -37,14 +37,14 @@ let test_update_deviation () =
          350.155
          rating_deviation;
      end
-  | Error _ -> Alcotest.fail "Shouldn't error out"
+  | `Error _ -> Alcotest.fail "Shouldn't error out"
 
 
 let test_update_deviation2 () =
   let p = default_player ~rating_deviation:5 () in
   let new_p = update p in
   match new_p with
-  | Ok {rating_deviation} ->
+  | `Ok {rating_deviation} ->
      begin
        Alcotest.check
          (Alcotest.float 1e-2)
@@ -52,13 +52,13 @@ let test_update_deviation2 () =
          11.56
          rating_deviation;
      end
-  | Error _ -> Alcotest.fail "Shouldn't error out"
+  | `Error _ -> Alcotest.fail "Shouldn't error out"
 
 let test_update_deviation_with_high_volatility () =
   let p = {rating = 1500.; rating_deviation = 5.; volatility = 1.} in
   let new_p = update p in
   match new_p with
-  | Ok {rating_deviation} ->
+  | `Ok {rating_deviation} ->
      begin
        Alcotest.check
          (Alcotest.float 1e-2)
@@ -66,7 +66,7 @@ let test_update_deviation_with_high_volatility () =
          173.79
          rating_deviation;
      end
-  | Error _ -> Alcotest.fail "Shouldn't error out"
+  | `Error _ -> Alcotest.fail "Shouldn't error out"
 
 let update_suite = [
     "update only touches deviation", `Quick, test_update_only_deviation;
